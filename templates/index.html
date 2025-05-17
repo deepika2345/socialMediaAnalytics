@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8" />
+ <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+ <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+ <title>Login Page | SMAT</title>
+</head>
+<body>
+ <div class="container" id="container">
+
+   <!-- Sign Up Form -->
+   <div class="form-container sign-up">
+     <form method="POST" action="/register">
+       <h1>Create Account</h1>
+       {% if register_message %}
+          <p class="error-message">{{ register_message }}</p>
+        {% endif %}
+       <input type="text" id="name" name="name" placeholder="Name" required />
+       <input type="email" id="email" name="email" placeholder="Email" required />
+       <input type="password" id="reg_password" name="password" placeholder="Password" required />
+       <ul id="password_rules">
+        <li id="length" class="invalid">At least 8 characters</li>
+        <li id="uppercase" class="invalid">At least one uppercase letter</li>
+        <li id="lowercase" class="invalid">At least one lower case</li>
+        <li id="number" class="invalid">At least one number</li>
+        <li id="special" class="invalid">At least one special character</li>
+       </ul>
+       <input type="password" id="reg_confirm_password" name="confirm_password" placeholder="Confirm Password" required />
+       <select name="security_question" id="signupQuestion" required>
+         <option value="" disabled selected>--select the security question--</option>
+         <option value="What is your high school name?">What is your high school name?</option>
+         <option value="Which is your favourite color?">Which is your favourite color?</option>
+         <option value="What is your pet name?">What is your pet name?</option>
+         <option value="Who is your favourite actor/actress?">Who is your favourite actor/actress?</option>
+       </select>
+       <input type="text" id="answer"name="security_answer" placeholder="Answer" required />
+       <div id="regError" class="error-message" style="display: none;color: red;">Passwords do not match!</div>
+       <button type="submit">Sign Up</button>
+     </form>
+   </div>
+
+   <!-- Sign In Form -->
+   <div class="form-container sign-in">
+     <form action="/login" method="POST">
+       <h1>Sign In</h1>
+       {% if login_message %}
+          <p class="error-message">{{ login_message }}</p>
+       {% endif %}
+       <input type="email" name="email" placeholder="Email" required />
+       <input type="password" name="password" placeholder="Password" required />
+       <a href="#" id="forgotPasswordLink">Forget your password?</a>
+       <button type="submit">Sign In</button>
+     </form>
+   </div>
+
+   <!-- Toggle UI -->
+   <div class="toggle-container">
+     <div class="toggle">
+       <div class="toggle-panel toggle-left">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="logo-image" />
+         <h1>Welcome Back!</h1>
+         <p>Enter your personal details to use all site features</p>
+         <button class="hidden" id="login">Sign In</button>
+       </div>
+       <div class="toggle-panel toggle-right">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="logo-image" />
+         <h1>Hello, Friend!</h1>
+         <p>Register with your details to use all site features</p>
+         <button class="hidden" id="register">Sign Up</button>
+       </div>
+     </div>
+   </div>
+ </div>
+
+ <!-- Password Reset Popup -->
+ <div id="resetPopup" class="popup-overlay">
+   <div class="popup">
+     <h2>Reset Password</h2>
+     
+     <form id="resetForm" onsubmit="return handleReset(event)">
+       <input type="email" id="reset_email" placeholder="Registered Email" name="email" required />
+       <select id="reset_question" name="security_question" required>
+         <option value="">--select the security question--</option>
+         <option value="What is your high school name?">What is your high school name?</option>
+         <option value="Which is your favourite color?">Which is your favourite color?</option>
+         <option value="What is your pet name?">What is your pet name?</option>
+         <option value="Who is your favourite actor/actress?">Who is your favourite actor/actress?</option>
+       </select>
+       <input type="text" id="reset_answer" placeholder="Answer" name="security_answer" required />
+
+       <div id="passwordFields" style="display:none;">
+         <input type="password" id="new_password" name="new_password" placeholder="New Password"/>
+         <p id="reset_password_error" class="password_error" style="color: red; font-size:smaller; display: none;">
+          Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one digit, and one special symbol.
+        </p>        
+         <input type="password" id="confirm_new_password" name="confirm_password"  placeholder="Confirm Password" />
+       </div>
+
+       <div class="error-message" id="resetError"></div>
+       <button type="submit" class="resetPopupBtn" style="margin-right: 1.3rem;">Submit</button>
+       <button type="button" class="resetPopupBtn" onclick="closeResetPopup()">Cancel</button>
+      </form>
+    </div>
+    <div>
+      <button id="crossPopup" onclick="closeResetPass()">X</button>
+   </div>
+ </div>
+ <script>
+  window.addEventListener("load", () => {
+  const activeForm = "{{ active_form }}";
+  if (activeForm === "register") {
+    container.classList.add("active");
+  } else {
+    container.classList.remove("active");
+  }
+});
+
+</script>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
