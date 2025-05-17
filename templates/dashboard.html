@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        .analytics-section {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+        .header {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #343a40;
+            border-bottom: 2px solid #dee2e6;
+            padding-bottom: 5px;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .interactions-row {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        .interaction-card {
+            width: 30%;
+            min-width: 300px;
+        }
+        .engagement-rate {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .time-filter button {
+            margin-right: 10px;
+            padding: 5px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .time-filter button.active {
+            background: #007bff;
+            color: white;
+        }
+        #growthChart {
+            height: 400px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome, {{ name }}!</h1>
+    <p>You're logged in successfully.</p>
+    <a href="/logout"><button>Logout</button></a>
+    
+    <!-- Form to enter credentials -->
+    <center>
+        <form action="{{ url_for('sc_submission') }}" method="POST" id="credentials-form">
+            <caption>Enter your social media credentials here</caption><br>
+            <input type="text" name="username" placeholder="Username" required><br>
+            <input type="password" name="password" placeholder="Password" required><br>
+            <button type="submit" id="submit-btn" class="btn btn-primary">Submit</button>
+        </form>
+    </center>
+
+    {% block content %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="messages">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    <br>
+    <hr>
+    <br>
+    
+    {% if analytics %}
+    <!-- 1. User Details Section -->
+    <div class="analytics-section">
+        <div class="header">User Details</div>
+        <div class="card">
+            <p><strong>Username:</strong> {{ analytics.user_info.username }}</p>
+            <p><strong>Email:</strong> {{ analytics.user_info.email }}</p>
+            <p><strong>Followers:</strong> {{ analytics.user_info.followers_count }}</p>
+        </div>
+    </div>
+
+    <!-- 2. Highest Interaction Section -->
+    <div class="analytics-section">
+        <div class="header">Highest Interactions</div>
+        <div class="interactions-row">
+            <div class="interaction-card card">
+                <h3>Most Liked Post</h3>
+                <img src="http://localhost:5000/image/{{ analytics.highest_interactions.most_liked.image_id }}" width="200">
+                <p>{{ analytics.highest_interactions.most_liked.caption }}</p>
+                <p>Likes: {{ analytics.highest_interactions.most_liked.likes }}</p>
+            </div>
+            <div class="interaction-card card">
+                <h3>Most Commented Post</h3>
+                <img src="http://localhost:5000/image/{{ analytics.highest_interactions.most_commented.image_id }}" width="200">
+                <p>{{ analytics.highest_interactions.most_commented.caption }}</p>
+                <p>Comments: {{ analytics.highest_interactions.most_commented.comments|length }}</p>
+            </div>
+            <div class="interaction-card card">
+                <h3>Most Shared Post</h3>
+                <img src="http://localhost:5000/image/{{ analytics.highest_interactions.most_shared.image_id }}" width="200">
+                <p>{{ analytics.highest_interactions.most_shared.caption }}</p>
+                <p>Shares: {{ analytics.highest_interactions.most_shared.shares }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 3. Engagement Rate Section -->
+    <div class="analytics-section">
+        <div class="header">Engagement Rate</div>
+        {% for post in analytics.posts_by_engagement %}
+        <div class="card">
+            <h4>{{ post.caption }}</h4>
+            <img src="http://localhost:5000/image/{{ post.image_id }}" width="200">
+            <p>Likes: {{ post.likes }} | Comments: {{ post.comments|length }} | Shares: {{ post.shares }}</p>
+            <p class="engagement-rate">Engagement Rate: {{ "%.2f"|format(post.engagement_rate*100) }} %</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- 4. Followers Growth Section -->
+    <div class="analytics-section">
+        <div class="header">Followers Growth</div>
+        <div class="time-filter">
+            <button onclick="plotGrowthChart('daily')">Daily Analysis</button>
+            <button onclick="plotGrowthChart('weekly')">Weekly Analysis</button>
+            <button onclick="plotGrowthChart('monthly')">Monthly Analysis</button>
+        </div>
+        <img id="followers-plot" src="{{ analytics.plot_url }}" width="700">
+    </div>
+    {% endif %}
+    {% endblock %}
+
+    <script>
+        function plotGrowthChart(period) {
+            fetch('/get_plot', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `period=${period}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('followers-plot').src = data.plot_url;
+            })
+            .catch(err => console.error("Plot fetch error:", err));
+        }
+    </script>
+</body>
+</html>
